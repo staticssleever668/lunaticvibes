@@ -1,22 +1,14 @@
 #include <string>
 #include <filesystem>
+
 #include "sqlite3.h"
 #include "db_conn.h"
 #include "common/log.h"
 
-#ifdef _MSC_VER
-#ifndef strcpy
-#define strcpy strcpy_s
-#endif
-#ifndef strncpy
-#define strncpy strncpy_s
-#endif
-#endif
-
 SQLite::SQLite(const char* path, const char* tag) 
 {
     sqlite3_open(path, &_db);
-    strcpy(this->tag, sizeof(this->tag), tag);
+    strncpy(this->tag, tag, sizeof(this->tag));
 
     exec("PRAGMA temp_store = memory");
     exec("PRAGMA mmap_size = 536870912"); // 512MB
