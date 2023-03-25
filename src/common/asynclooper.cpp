@@ -169,7 +169,7 @@ void AsyncLooper::_loopWithSleep()
     while (_running)
     {
         run();
-        std::this_thread::sleep_for(std::chrono::milliseconds(_rateTime));
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000 / _rate));
     }
 }
 
