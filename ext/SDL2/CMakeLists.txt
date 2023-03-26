@@ -30,11 +30,12 @@ if (WIN32)
 else()
   message(FATAL_ERROR "There is no bundled SDL2 for this platform")
 endif()
+add_library(SDL2::SDL2 ALIAS SDL2)
 
 target_include_directories(SDL2 INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
 
 
-add_library(SDL2_main SHARED IMPORTED GLOBAL)
+add_library(SDL2main SHARED IMPORTED GLOBAL)
 if (WIN32)
     if (${BUILD_X64})
         set_target_properties(SDL2_main PROPERTIES
@@ -50,5 +51,6 @@ if (WIN32)
 else()
   message(FATAL_ERROR "There is no bundled SDL2main for this platform")
 endif()
+add_library(SDL2::SDL2main ALIAS SDL2main)
 
 target_include_directories(SDL2_main INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)

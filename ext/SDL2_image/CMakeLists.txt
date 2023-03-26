@@ -40,5 +40,6 @@ if (WIN32)
 else()
   message(FATAL_ERROR "There is no bundled SDL2_image for this platform")
 endif()
+add_library(SDL2_image::SDL2_image alias SDL2_image)
 
 target_include_directories(SDL2_image INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
