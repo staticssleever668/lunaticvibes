@@ -175,6 +175,7 @@ void AsyncLooper::_loopWithSleep()
 
 void AsyncLooper::loopStart()
 {
+    if (_running) return;
     handler = std::thread(&AsyncLooper::_loopWithSleep, this);
     _running = true;
 }
