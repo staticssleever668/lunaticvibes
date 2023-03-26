@@ -261,6 +261,76 @@ std::string from_utf8(const std::string& input, eFileEncoding toEncoding)
     return ret;
 }
 
+#else
+
+#include <cerrno>
+#include <vector>
+
+#include <iconv.h>
+
+static const char* get_iconv_encoding_name(eFileEncoding encoding)
+{
+    switch (encoding) {
+    case eFileEncoding::LATIN1:
+        return "ISO-8859-1";
+    case eFileEncoding::SHIFT_JIS:
+        return "CP932";
+    case eFileEncoding::EUC_KR:
+        return "CP949";
+    case eFileEncoding::UTF8:
+        return "UTF-8";
+    }
+    panic("Error", "Incorrect eFileEncoding");
+    abort();
+    return "";
+}
+
+static std::string convert(const std::string& input, eFileEncoding from, eFileEncoding to)
+{
+    const auto* source_encoding_name = get_iconv_encoding_name(from);
+    const auto* target_encoding_name = get_iconv_encoding_name(to);
+
+    auto icd = iconv_open(target_encoding_name, source_encoding_name);
+    if ((size_t)icd == -1) {
+        panic("Error", "Couldn't open iconv descriptor");
+    }
+
+    static constexpr size_t BUF_SIZE = 1024 * 32;
+    // I wanted to avoid manually allocating here so that we don't have
+    // to clean up manually in all return paths.
+    char out_buf[BUF_SIZE] = { 0 };
+
+    // BRUH-cast.
+    char* buf_ptr = const_cast<char*>(input.c_str());
+    std::size_t buf_len = input.length();
+    char* out_ptr = static_cast<char*>(out_buf);
+    std::size_t out_len = sizeof(out_buf);
+
+    std::size_t ret_len = iconv(icd, &buf_ptr, &buf_len, &out_ptr, &out_len);
+    if (ret_len == (size_t)-1) {
+        int err_bak = errno;
+        LOG_ERROR << "iconv error: " << err_bak << " (" << strerror(err_bak);
+        return std::string();
+    }
+    if (buf_len != 0) {
+        LOG_ERROR << "not evreything has been converted";
+    }
+
+    return std::string{out_buf};
+}
+
+std::string to_utf8(const std::string& input, eFileEncoding fromEncoding)
+{
+    return convert(input, fromEncoding, eFileEncoding::UTF8);
+}
+
+std::string from_utf8(const std::string& input, eFileEncoding toEncoding)
+{
+    return convert(input, eFileEncoding::UTF8, toEncoding);
+}
+
+#endif // WIN32
+
 std::u32string to_utf32(const std::string& input, eFileEncoding fromEncoding)
 {
     std::string inputUTF8 = to_utf8(input, fromEncoding);
@@ -325,8 +395,3 @@ std::string utf32_to_utf8(const std::u32string& str)
     u8Text.resize(to_next - &u8Text[0]);
     return u8Text;
 }
-
-#else
-#include <iconv.h>
-#error Encoding conversions are not implemented
-#endif
