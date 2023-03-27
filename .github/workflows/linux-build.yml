@@ -8,7 +8,7 @@ jobs:
       - name: Update package repository
         run: sudo apt-get update
       - name: Install dependencies
-        run: sudo apt-get install \
+        run: sudo apt-get install -yq --no-install-suggests --no-install-recommends \
           cmake make g++ \
           libsdl2-dev \
           libsdl2-image-dev \
