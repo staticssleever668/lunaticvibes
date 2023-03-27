@@ -6,7 +6,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Install dependencies
-        run: apt install \
+        run: sudo apt-get install \
           cmake make g++ \
           libsdl2-dev \
           libsdl2-image-dev \
