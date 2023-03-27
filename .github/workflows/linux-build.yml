@@ -11,6 +11,12 @@ jobs:
         run: sudo apt-get update
       - name: Install dependencies
         run: sudo apt-get install -yq --no-install-suggests --no-install-recommends cmake make g++ libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsqlite3-dev libssl-dev libcurl4-openssl-dev libavcodec-dev libavdevice-dev libavfilter-dev libavformat-dev libavutil-dev libswresample-dev libswscale-dev
+      - name: Work-around symbol collision
+        run: |
+          sudo sed -i 's/^typedef unsigned long Time;/\/\/ typedef unsigned long Time;/' /usr/include/X11/X.h
+          sudo sed -i 's/^typedef CARD32 Time;/\/\/ typedef CARD32 Time;/' /usr/include/X11/X.h
+          sudo sed -i '/#define _X11_XLIB_H_/a #define Time unsigned long long' /usr/include/X11/Xlib.h
+          sudo sed -i '/_XFUNCPROTOEND/a #endif Time' /usr/include/X11/Xlib.h
       - name: Build
         run: |
           cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Debug
